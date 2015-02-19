@@ -276,6 +276,9 @@ plot(veget)
 #conservative clone-corrected dataset (BRAcccons) in the following line code, and then rerun 
 #other lines of code
 BRAt<-BRAcc #name of the input file
+#BRAt<-BRA #the complete dataset
+#BRAt<-BRAcccons #the conservative clone-corrected dataset
+
 
 #converting data to a genind format
 BRADE<-df2genind(BRAt[,14:27],ncode=3,ind.names=BRAt$sample_ID,
