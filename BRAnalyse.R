@@ -637,6 +637,11 @@ AllRich<-function(data)
   return(rez)
 }
 
+BRAt<-BRAcc #name of the input file
+#converting data to a genind format
+BRADE<-df2genind(BRAt[,14:27],ncode=3,ind.names=as.character(BRAt$sample_ID), 
+                 pop=BRAt$pop_ID,NA.char=c("0"),ploidy=1)
+BRADE@other$xy<-BRAt[,4:5]
 AllRich(BRADE)[[2]]
 Ar<-apply(AllRich(BRADE)[[2]],1,mean)
 
