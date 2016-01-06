@@ -522,10 +522,11 @@ par(op)
 ###############################################################################
 
 BRAt<-BRAcc
-BRADE<-df2genind(BRAt[,14:27],ncode=3,ind.names=BRAt$sample_ID,
-                 pop=BRAt$pop_ID,missing=0,ploidy=1)
+BRADE<-df2genind(BRAt[,14:27],ncode=3,ind.names=as.character(BRAt$sample_ID),
+                 pop=BRAt$pop_ID,ploidy=1,NA.char=c("0"))
+summary(BRADE)
 BRADE@other$xy<-BRAt[,4:5]
-BRADEpop<-genind2genpop(BRADE,process.other=T,missing="0")
+BRADEpop<-genind2genpop(BRADE,process.other=T)
 cca1<-cca(as.data.frame(BRADEpop$tab),site_table[,-c(1:3)],scann=F)
 cca1
 plot(cca1)
@@ -542,8 +543,8 @@ plot(cca1)
 BRAt<-BRAcc #name of the input file
 
 #converting data to a genind format
-BRADE<-df2genind(BRAt[,14:27],ncode=3,ind.names=BRAt$sample_ID, 
-                 pop=BRAt$pop_ID,missing=0,ploidy=1)
+BRADE<-df2genind(BRAt[,14:27],ncode=3,ind.names=as.character(BRAt$sample_ID), 
+                 pop=BRAt$pop_ID,NA.char=c("0"),ploidy=1)
 BRADE@other$xy<-BRAt[,4:5]
 #determination of the number of clusters
 clustBRADE<- find.clusters(BRADE,max.n.clust=35)
@@ -608,12 +609,10 @@ AllRich<-function(data)
   #First, determining the smaller number of allele across sampled population
   matloc<-t(matrix(data=datapop@loc.fac,nrow=(dim(datapop@tab)[2]), 
                    ncol=(dim(datapop@tab)[1])))
-  matpop<-matrix(data=datapop@pop.names, nrow=(dim(datapop@tab)[1]), 
+  matpop<-matrix(data=row.names(datapop@tab), nrow=(dim(datapop@tab)[1]), 
                  ncol=(dim(datapop@tab)[2]))
   conf<-list(matpop, matloc)
   effN<-(tapply(datapop@tab, conf, sum))
-  effN<- effN[order(as.numeric(rownames(effN))),]
-  colnames(effN)<-locNames(datapop)
   echMin<-min(effN)
   
   #Second, build of the matrix of total number of sampled allele 
@@ -634,11 +633,6 @@ AllRich<-function(data)
   
   #Allelic richness in each population, for each LOCUS
   ArLOC<-(tapply(CoMat, conf, sum))
-  ArLOC<-ArLOC[order(as.numeric(dimnames(ArLOC)[[1]])),]
-  colnames(ArLOC)<-locNames(datapop)
-  ##determining mean Allelic Richness across site and loci
-  #determining mean Allelic Richness across loci
-  #Ar<-(apply(ArLOC,1,mean))
   rez<-list("Minimum Sampling Size"=echMin,"Allelic Richness Matrix"=ArLOC)
   return(rez)
 }
@@ -655,12 +649,12 @@ PrivAllRich<-function(data)
   #First, determining the smaller number of allele across sampled population
   matloc<-t(matrix(data=datapop@loc.fac,nrow=(dim(datapop@tab)[2]), 
                    ncol=(dim(datapop@tab)[1])))
-  matpop<-matrix(data=datapop@pop.names, nrow=(dim(datapop@tab)[1]), 
+  matpop<-matrix(data=row.names(datapop@tab), nrow=(dim(datapop@tab)[1]), 
                  ncol=(dim(datapop@tab)[2]))
   conf<-list(matpop, matloc)
   effN<-(tapply(datapop@tab, conf, sum))
-  effN<- effN[order(as.numeric(rownames(effN))),]
-  colnames(effN)<-locNames(datapop)
+#   effN<- effN[order(as.numeric(rownames(effN))),]
+#   colnames(effN)<-locNames(datapop)
   echMin<-min(effN)
   
   #Second, build of the matrix of total number of sampled allele 
@@ -699,8 +693,8 @@ PrivAllRich<-function(data)
   CoMat4<-CoMat*CoMat3
   #Private Allelic richness in each population, for each LOCUS
   PrivArLOC<-(tapply(CoMat4, conf, sum))
-  PrivArLOC<-PrivArLOC[order(as.numeric(dimnames(PrivArLOC)[[1]])),]
-  colnames(PrivArLOC)<-locNames(datapop)
+#   PrivArLOC<-PrivArLOC[order(as.numeric(dimnames(PrivArLOC)[[1]])),]
+#   colnames(PrivArLOC)<-locNames(datapop)
   ##determining mean Allelic Richness across site and loci
   #determining mean Allelic Richness across loci
   #Ar<-(apply(ArLOC,1,mean))
@@ -718,10 +712,10 @@ HeterNei<-function(data)
 {
   #Conversion from 'genind' object to 'genpop' object
   datapop<-genind2genpop(data, process.other=TRUE, other.action=mean,
-                         missing="0",quiet = TRUE)
+                         quiet = TRUE)
   #Heterozygosity (Nei 1987) in each population, for each LOCUS
   HsLOC<-matrix(nrow=(dim(datapop@tab)[1]),
-                ncol=(length(data@loc.names)), byrow=TRUE)
+                ncol=(length(levels(datapop@loc.fac))), byrow=TRUE)
   for (i in (1:(dim(datapop@tab)[1]))) {
     dataLOC<-genind2loci(data[data$pop==levels(data$pop)[i]])
     ss<-summary(dataLOC)
@@ -729,7 +723,7 @@ HeterNei<-function(data)
   }
   #determining mean Heterozygosity across loci
   Hs<-(apply(HsLOC,1,mean))
-  attr(Hs,"names")<-data@pop.names
+  attr(Hs,"names")<-row.names(datapop@tab)
   return(Hs)
 }
 
@@ -819,8 +813,9 @@ resampleDIV<-function(data,grp1,grp2,nbsim)
     resamp$pop_ID<-as.character(resamp$pop_ID)
     resamp$pop_ID[1:24]<-rep("BRAinvad",24)
     resamp$pop_ID[25:48]<-rep("BRAendem",24)
-    resampADE<-df2genind(resamp[,14:27],ncode=3,ind.names=resamp$sample_ID,
-                         pop=resamp$pop_ID,missing=0,ploidy=1)
+    resampADE<-df2genind(resamp[,14:27],ncode=3,
+                         ind.names=as.character(resamp$sample_ID),
+                         pop=resamp$pop_ID,NA.char=c("0"),ploidy=1)
     
     ArDistr<-rbind(ArDistr,apply(AllRich(resampADE)[[2]],1,mean))
     PrivArDistr<-rbind(PrivArDistr,apply(PrivAllRich(resampADE)[[2]],1,mean))
