@@ -18,15 +18,13 @@ library(gdistance)
 library(vegan)
 library(Geneland)
 
-setwd("~/work/Rfichiers/Githuber/BRAMU_data")
-
 
 ###############################################################################
 #Loading the genetic data and preparing the datafile for other softwares
 ###############################################################################
 
 #first of all, we load the genetic dataset
-BRA<-read.table("BRAdata.txt",header=T,sep="\t")
+BRA<-read.table("data/BRAdata.txt",header=T,sep="\t")
 #here is the structure of the datafile, for explanation of each columns, 
 #see ReadMe.txt file in DRYAD repository
 head(BRA)
@@ -53,7 +51,7 @@ structexport<-function(fileinput) {
   temp<-fileinput[,c(1:2,14:27)]
   temp[temp=="0"]<-"-9"
   levels(temp$pop_ID)<-c(9,4,5,6,8,15,1,2,13,14,3,7,12,10,11)
-  write.table(temp,file="output.str",row.names=F)
+  write.table(temp,file="output/output.str",row.names=F)
 }
 
 #only a few edition to the output file are needed before running STRUCTURE 
@@ -77,7 +75,7 @@ tessexport<-function(fileinput) {
   #missing data should be formatted with negative number
   temp[temp=="0"]<-"-9"
   levels(temp$pop_ID)<-c(9,4,5,6,8,15,1,2,13,14,3,7,12,10,11)
-  write.table(temp,file="output.tess",row.names=F)
+  write.table(temp,file="output/output.tess",row.names=F)
 }
 
 tessexport(BRA)
@@ -98,10 +96,10 @@ genelandexport<-function(fileinput) {
   tempgen<-fileinput[,c(14:27)]
   #missing data should be formatted with "NA"
   tempgen[tempgen=="0"]<-"NA"
-  write.table(tempgeo,file="outputgeo.geneland",row.names=F,col.names=FALSE,
-              quote=FALSE,sep=" ")
-  write.table(tempgen,file="outputgen.geneland",row.names=F,col.names=FALSE,
-              quote=FALSE,sep=" ")
+  write.table(tempgeo,file="output/outputgeo.geneland",
+              row.names=F,col.names=FALSE,quote=FALSE,sep=" ")
+  write.table(tempgen,file="output/outputgen.geneland",
+              row.names=F,col.names=FALSE,quote=FALSE,sep=" ")
 }
 
 genelandexport(BRA)
@@ -122,16 +120,18 @@ genelandexport(BRAcc)
 #importing the file, replace white space in the column header names with 
 #underscore, replace "?1" by "alpha", and remove double white spaces or it
 #will provoc importation problem or failure
-resstr<-read.table(file="BRAstr.out", header=T,sep=" ",blank.lines.skip=T)
-resccstr<-read.table(file="BRAccstr.out", header=T,sep=" ",blank.lines.skip=T)
-resccconsstr<-read.table(file="BRAccconsstr.out", header=T,sep=" ",
+resstr<-read.table(file="data/BRAstr.out", header=T,sep=" ",blank.lines.skip=T)
+resccstr<-read.table(file="data/BRAccstr.out", header=T,sep=" ",
+                     blank.lines.skip=T)
+resccconsstr<-read.table(file="data/BRAccconsstr.out", header=T,sep=" ",
                          blank.lines.skip=T)
 
 #new version of the file with 15 repetitions of each run
-resstr<-read.table(file="BRAoutput.out", header=T,sep=" ",blank.lines.skip=T)
-resccstr<-read.table(file="BRAccoutput.out", header=T,sep=" ",
+resstr<-read.table(file="data/BRAoutput.out", header=T,sep=" ",
+                   blank.lines.skip=T)
+resccstr<-read.table(file="data/BRAccoutput.out", header=T,sep=" ",
                      blank.lines.skip=T)
-resccconsstr<-read.table(file="BRAccconsoutput.out", header=T,sep=" ",
+resccconsstr<-read.table(file="data/BRAccconsoutput.out", header=T,sep=" ",
                          blank.lines.skip=T)
 
 
